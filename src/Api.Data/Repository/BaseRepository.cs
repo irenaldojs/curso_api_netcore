@@ -65,6 +65,11 @@ namespace Api.Data.Repository
             return item;            
         }
 
+        public async Task<bool> ExistAsync(Guid id)
+        {
+            // Check if there is a record
+            return await _dataSet.AnyAsync(p => p.Id.Equals(id));
+        }
         public Task<T> SelectAsync(Guid id)
         {
             throw new NotImplementedException();
