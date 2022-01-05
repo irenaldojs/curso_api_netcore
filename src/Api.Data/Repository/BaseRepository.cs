@@ -18,14 +18,15 @@ namespace Api.Data.Repository
             _context = context;
             _dataSet = _context.Set<T>();
         }
-        Task<bool> IRepository<T>.DeleteAsync(Guid id)
+        public Task<bool> DeleteAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        async Task<T> IRepository<T>.InsertAsync(T item)
+        public async Task<T> InsertAsync(T item)
         {
-            try{
+            try
+            {
                 // If the id is empty add new id
                 if(item.Id == Guid.Empty)
                     item.Id = Guid.NewGuid();
@@ -38,26 +39,48 @@ namespace Api.Data.Repository
                 // Commit to database
                 await _context.SaveChangesAsync();
             }
-            catch(Exception ex){
+            catch(Exception ex)
+            {
                 throw ex;
             }
 
             return item;            
         }
 
-        Task<T> IRepository<T>.SelectAsync(Guid id)
+        public Task<T> SelectAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        Task<IEnumerable<T>> IRepository<T>.SelectAsync()
+        public Task<IEnumerable<T>> SelectAsync()
         {
             throw new NotImplementedException();
         }
 
-        Task<T> IRepository<T>.UpdateAsync(T item)
+        public async Task<T> UpdateAsync(T item)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Selecting the record
+                var result = await _dataSet.SingleOrDefaultAsync(p => p.Id.Equals(item.Id));
+                // Not finding record
+                if(result == null)
+                    return null;
+                // Saving the update time
+                item.UpdateAt = DateTime.UtcNow;
+                // Saving the create time
+                item.CreatAt = result.CreatAt;
+                // Setting the values
+                _context.Entry(result).CurrentValues.SetValues(item);
+                // Commit to database
+                await _context.SaveChangesAsync();
+                
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            return item;
         }
     }
 }
